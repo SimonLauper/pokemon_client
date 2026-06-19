@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:pokemon_client/src/features/pokemon/presentation/pokemon_details/pokemon_details_screen.dart';
-// import 'package:pokemon_client/src/features/pokemon/presentation/pokemon_list/pokemon_list_screen.dart';
+import 'package:pokemon_client/src/routes/app_router.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      home: PokemonDetailsScreen(pokedexId: "1"),
+      routerConfig: goRouter,
     );
   }
 }
