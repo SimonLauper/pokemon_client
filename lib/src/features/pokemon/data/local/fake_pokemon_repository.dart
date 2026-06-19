@@ -6,6 +6,12 @@ class FakePokemonRepository {
   List<Pokemon> getAllPokemons() {
     return testPokemon;
   }
+
+  Pokemon getPokemonById(String pokemonId) {
+    return testPokemon.firstWhere(
+      (pokemon) => pokemon.pokedexId == int.parse(pokemonId),
+    );
+  }
 }
 
 final pokemonRepositoryProvider = Provider((ref) {
