@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pokemon_client/src/features/pokemon/data/local/fake_pokemon_repository.dart';
+import 'package:pokemon_client/src/features/pokemon/domain/pokemon.dart';
 import 'package:pokemon_client/src/features/pokemon/presentation/pokemon_list/pokemon_card.dart';
 
 class PokemonListScreen extends ConsumerStatefulWidget {
@@ -11,9 +12,36 @@ class PokemonListScreen extends ConsumerStatefulWidget {
 }
 
 class _PokemonListScreenState extends ConsumerState<PokemonListScreen> {
+  String? _selectedType;
+
+  final typesList = [
+    'Acier',
+    'Combat',
+    'Dragon',
+    'Eau',
+    'Électrik',
+    'Fée',
+    'Feu',
+    'Glace',
+    'Insecte',
+    'Normal',
+    'Plante',
+    'Poison',
+    'Psy',
+    'Roche',
+    'Sol',
+    'Spectre',
+    'Ténèbres',
+    'Vol',
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final pokemons = ref.read(pokemonRepositoryProvider).getAllPokemons();
+    final repository = ref.read(pokemonRepositoryProvider);
+    final List<Pokemon> pokemons = _selectedType == null
+        ? repository.getAllPokemons()
+        : repository.getPokemonByType(_selectedType);
+
     return Stack(
       children: [
         Positioned(
@@ -29,6 +57,24 @@ class _PokemonListScreenState extends ConsumerState<PokemonListScreen> {
           ),
           body: Column(
             children: [
+              SizedBox(
+                height: 50,
+                child: DropdownButton<String>(
+                  value: _selectedType,
+                  hint: const Icon(Icons.filter_alt),
+                  items: typesList.map((value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedType = value;
+                    });
+                  },
+                ),
+              ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(

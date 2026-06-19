@@ -12,6 +12,12 @@ class FakePokemonRepository {
       (pokemon) => pokemon.pokedexId == int.parse(pokemonId),
     );
   }
+
+  List<Pokemon> getPokemonByType(String? type) {
+    return testPokemon
+        .where((pokemon) => pokemon.types.any((t) => t.name == type))
+        .toList();
+  }
 }
 
 final pokemonRepositoryProvider = Provider((ref) {
