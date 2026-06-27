@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pokemon_client/src/features/pokemon/data/local/fake_pokemon_repository.dart';
-import 'package:pokemon_client/src/features/pokemon/domain/pokemon.dart';
+import 'package:pokemon_client/src/features/pokemon/data/remote/pokemon_repository.dart';
 import 'package:pokemon_client/src/features/pokemon/presentation/pokemon_list/pokemon_card.dart';
 
 class PokemonListScreen extends ConsumerStatefulWidget {
@@ -37,10 +36,7 @@ class _PokemonListScreenState extends ConsumerState<PokemonListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final repository = ref.read(pokemonRepositoryProvider);
-    final List<Pokemon> pokemons = _selectedType == null
-        ? repository.getAllPokemons()
-        : repository.getPokemonByType(_selectedType);
+    final pokemonAsync = ref.watch(pokemonProvider);
 
     return Stack(
       children: [
@@ -72,27 +68,39 @@ class _PokemonListScreenState extends ConsumerState<PokemonListScreen> {
                     setState(() {
                       _selectedType = value;
                     });
+                    if (value == null) {
+                      ref.read(pokemonProvider.notifier).fetchPokemons();
+                    } else {
+                      ref
+                          .read(pokemonProvider.notifier)
+                          .getPokemonByType(value);
+                    }
                   },
                 ),
               ),
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: 50,
-                    left: 8,
-                    right: 8,
-                    bottom: 8,
-                  ),
-                  child: GridView.builder(
-                    itemCount: pokemons.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisExtent: 150,
-                        ),
-                    itemBuilder: (context, index) {
-                      return PokemonCard(pokemon: pokemons[index]);
-                    },
+                child: pokemonAsync.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (error, _) => Center(child: Text('Erreur : $error')),
+                  data: (state) => Padding(
+                    padding: const EdgeInsets.only(
+                      top: 50,
+                      left: 8,
+                      right: 8,
+                      bottom: 8,
+                    ),
+                    child: GridView.builder(
+                      itemCount: state.pokemons.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisExtent: 150,
+                          ),
+                      itemBuilder: (context, index) {
+                        return PokemonCard(pokemon: state.pokemons[index]);
+                      },
+                    ),
                   ),
                 ),
               ),

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:pokemon_client/src/features/pokemon/domain/pokemon.dart';
 
 class Heart extends StatefulWidget {
-  const Heart({required this.pokemon, super.key});
+  const Heart({required this.isFav, required this.onToggle, super.key});
 
-  final Pokemon pokemon;
+  final bool isFav;
+  final VoidCallback onToggle;
 
   @override
   State<Heart> createState() => _HeartState();
@@ -16,6 +16,7 @@ class _HeartState extends State<Heart> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
+    super.initState();
     _controller = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
@@ -24,7 +25,6 @@ class _HeartState extends State<Heart> with SingleTickerProviderStateMixin {
       TweenSequenceItem<double>(tween: Tween(begin: 25, end: 40), weight: 50),
       TweenSequenceItem<double>(tween: Tween(begin: 40, end: 25), weight: 50),
     ]).animate(_controller);
-    super.initState();
   }
 
   @override
@@ -42,11 +42,11 @@ class _HeartState extends State<Heart> with SingleTickerProviderStateMixin {
           onPressed: () {
             _controller.reset();
             _controller.forward();
-            widget.pokemon.toggleIsFav();
+            widget.onToggle();
           },
           icon: Icon(
             Icons.favorite,
-            color: widget.pokemon.isFav ? Colors.red[700] : Colors.grey[800],
+            color: widget.isFav ? Colors.red[700] : Colors.grey[800],
             size: _sizeAnimation.value,
           ),
         );
