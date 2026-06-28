@@ -6,13 +6,27 @@ import 'package:pokemon_client/src/features/pokemon/domain/pokemon.dart';
 
 class PokemonState {
   final List<Pokemon> pokemons;
+  final int currentPage;
+  final int totalPages;
   final String filter;
 
-  const PokemonState({this.pokemons = const [], this.filter = ''});
+  const PokemonState({
+    this.pokemons = const [],
+    this.currentPage = 1,
+    this.totalPages = 1,
+    this.filter = '',
+  });
 
-  PokemonState copyWith({List<Pokemon>? pokemons, String? filter}) {
+  PokemonState copyWith({
+    List<Pokemon>? pokemons,
+    int? currentPage,
+    int? totalPages,
+    String? filter,
+  }) {
     return PokemonState(
       pokemons: pokemons ?? this.pokemons,
+      currentPage: currentPage ?? this.currentPage,
+      totalPages: totalPages ?? this.totalPages,
       filter: filter ?? this.filter,
     );
   }
@@ -41,8 +55,56 @@ class PokemonNotifier extends AsyncNotifier<PokemonState> {
           .map((json) => Pokemon.fromJson(json))
           .toList();
 
-      return PokemonState(pokemons: pokemons);
+      return PokemonState(
+        pokemons: pokemons,
+        currentPage: data['currentPage'],
+        totalPages: data['totalPages'],
+        filter: "",
+      );
     } catch (e) {
+      rethrow;
+    }
+  }
+
+  void loadMore() async {
+    if (_isLoading) return;
+    final current = state.value;
+    if (current == null || current.currentPage >= current.totalPages) return;
+
+    _isLoading = true;
+
+    try {
+      final nextPage = current.currentPage + 1;
+      final type = current.filter;
+
+      final response = current.filter.isNotEmpty
+          ? await http.get(
+              Uri.parse(
+                '$_url/pokemons/type?type=$type&page=$nextPage&limit=20',
+              ),
+            )
+          : await http.get(Uri.parse('$_url/pokemons?page=$nextPage&limit=20'));
+
+      if (response.statusCode != 200) {
+        throw FormatException('Failed to load more pokemons');
+      }
+
+      final data = jsonDecode(response.body);
+
+      final newPokemons = (data['pokemons'] as List)
+          .map((json) => Pokemon.fromJson(json))
+          .toList();
+
+      state = AsyncData(
+        current.copyWith(
+          pokemons: [...current.pokemons, ...newPokemons],
+          currentPage: data['currentPage'],
+          totalPages: data['totalPages'],
+        ),
+      );
+      _isLoading = false;
+    } catch (e) {
+      _isLoading = false;
       rethrow;
     }
   }
@@ -66,7 +128,14 @@ class PokemonNotifier extends AsyncNotifier<PokemonState> {
       final pokemons = (data['pokemons'] as List)
           .map((json) => Pokemon.fromJson(json))
           .toList();
-      state = AsyncData(current.copyWith(pokemons: pokemons, filter: type));
+      state = AsyncData(
+        current.copyWith(
+          pokemons: pokemons,
+          currentPage: 1,
+          totalPages: data['totalPages'],
+          filter: type,
+        ),
+      );
       _isLoading = false;
     } catch (e) {
       _isLoading = false;

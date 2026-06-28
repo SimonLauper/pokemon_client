@@ -20,6 +20,6 @@ class FakePokemonRepository {
   }
 }
 
-final pokemonRepositoryProvider = Provider((ref) {
+final pokemonRepositoryProvider = FutureProvider((ref) {
   return FakePokemonRepository();
 });

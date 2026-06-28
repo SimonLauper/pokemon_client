@@ -11,6 +11,27 @@ class PokemonListScreen extends ConsumerStatefulWidget {
 }
 
 class _PokemonListScreenState extends ConsumerState<PokemonListScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
+      ref.read(pokemonProvider.notifier).loadMore();
+    }
+  }
+
   String? _selectedType;
 
   final typesList = [
@@ -33,7 +54,6 @@ class _PokemonListScreenState extends ConsumerState<PokemonListScreen> {
     'Ténèbres',
     'Vol',
   ];
-
   @override
   Widget build(BuildContext context) {
     final pokemonAsync = ref.watch(pokemonProvider);
@@ -91,6 +111,7 @@ class _PokemonListScreenState extends ConsumerState<PokemonListScreen> {
                       bottom: 8,
                     ),
                     child: GridView.builder(
+                      controller: _scrollController,
                       itemCount: state.pokemons.length,
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
