@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pokemon_client/src/features/pokemon/data/local/fake_pokemon_repository.dart';
 import 'package:pokemon_client/src/features/pokemon/data/remote/pokemon_repository.dart';
 import 'package:pokemon_client/src/features/pokemon/presentation/pokemon_list/pokemon_card.dart';
 
@@ -56,8 +58,17 @@ class _PokemonListScreenState extends ConsumerState<PokemonListScreen> {
   ];
   @override
   Widget build(BuildContext context) {
-    final pokemonAsync = ref.watch(pokemonProvider);
-
+    final pokemonAsync = kIsWeb
+        ? ref.watch(pokemonProvider)
+        : AsyncData(
+            PokemonState(
+              pokemons: _selectedType == null
+                  ? FakePokemonRepository().getAllPokemons()
+                  : FakePokemonRepository().getPokemonByType(_selectedType),
+              currentPage: 1,
+              totalPages: 1,
+            ),
+          );
     return Stack(
       children: [
         Positioned(

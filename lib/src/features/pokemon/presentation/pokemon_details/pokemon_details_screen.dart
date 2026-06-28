@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pokemon_client/src/features/pokemon/data/local/fake_pokemon_repository.dart';
 import 'package:pokemon_client/src/features/pokemon/data/remote/pokemon_repository.dart';
 import 'package:pokemon_client/src/features/pokemon/presentation/pokemon_details/heart.dart';
 
@@ -16,8 +18,9 @@ class PokemonDetailsScreen extends ConsumerStatefulWidget {
 class _PokemonDetailsScreenState extends ConsumerState<PokemonDetailsScreen> {
   @override
   Widget build(BuildContext context) {
-    final pokemonAsync = ref.watch(getPokemonByIdProvider(widget.pokedexId));
-
+    final pokemonAsync = kIsWeb
+        ? ref.watch(getPokemonByIdProvider(widget.pokedexId))
+        : AsyncData(FakePokemonRepository().getPokemonById(widget.pokedexId));
     return Scaffold(
       backgroundColor: Colors.greenAccent[100],
       appBar: AppBar(backgroundColor: Colors.transparent),
@@ -69,12 +72,19 @@ class _PokemonDetailsScreenState extends ConsumerState<PokemonDetailsScreen> {
                                 child: Heart(
                                   isFav: pokemon.isFav,
                                   onToggle: () async {
-                                    await ref
-                                        .read(pokemonProvider.notifier)
-                                        .setPokemonToFav(pokemon.pokedexId);
-                                    ref.invalidate(
-                                      getPokemonByIdProvider(widget.pokedexId),
-                                    );
+                                    if (kIsWeb) {
+                                      await ref
+                                          .read(pokemonProvider.notifier)
+                                          .setPokemonToFav(pokemon.pokedexId);
+                                      ref.invalidate(
+                                        getPokemonByIdProvider(
+                                          widget.pokedexId,
+                                        ),
+                                      );
+                                    } else {
+                                      pokemon.toggleIsFav();
+                                      setState(() {});
+                                    }
                                   },
                                 ),
                               ),
