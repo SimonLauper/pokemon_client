@@ -33,7 +33,7 @@ class PokemonState {
 }
 
 class PokemonNotifier extends AsyncNotifier<PokemonState> {
-  static const _url = 'http://localhost:3000';
+  static const _url = 'https://api.lauper-dev.ch';
 
   @override
   Future<PokemonState> build() async {
@@ -42,7 +42,6 @@ class PokemonNotifier extends AsyncNotifier<PokemonState> {
 
   bool _isLoading = false;
 
-  // Méthode interne : fetch page 1 sans filtre, retourne le state
   Future<PokemonState> _fetchPage1() async {
     final response = await http.get(Uri.parse('$_url/pokemons?page=1'));
     if (response.statusCode != 200) {
@@ -60,7 +59,6 @@ class PokemonNotifier extends AsyncNotifier<PokemonState> {
     );
   }
 
-  // Méthode publique appelée depuis le UI pour reset sur "Tous"
   Future<void> fetchPokemons() async {
     if (_isLoading) return;
     _isLoading = true;
@@ -109,7 +107,6 @@ class PokemonNotifier extends AsyncNotifier<PokemonState> {
         ),
       );
     } catch (e) {
-      // On ne crash pas l'état existant sur un loadMore raté
     } finally {
       _isLoading = false;
     }
