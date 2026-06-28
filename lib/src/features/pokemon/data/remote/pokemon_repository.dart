@@ -37,32 +37,40 @@ class PokemonNotifier extends AsyncNotifier<PokemonState> {
 
   @override
   Future<PokemonState> build() async {
-    return await fetchPokemons();
+    return await _fetchPage1();
   }
 
   bool _isLoading = false;
-  Future<PokemonState> fetchPokemons() async {
+
+  // Méthode interne : fetch page 1 sans filtre, retourne le state
+  Future<PokemonState> _fetchPage1() async {
+    final response = await http.get(Uri.parse('$_url/pokemons?page=1'));
+    if (response.statusCode != 200) {
+      throw FormatException('Failed to load pokemons');
+    }
+    final data = jsonDecode(response.body);
+    final pokemons = (data['pokemons'] as List)
+        .map((json) => Pokemon.fromJson(json))
+        .toList();
+    return PokemonState(
+      pokemons: pokemons,
+      currentPage: data['currentPage'],
+      totalPages: data['totalPages'],
+      filter: '',
+    );
+  }
+
+  // Méthode publique appelée depuis le UI pour reset sur "Tous"
+  Future<void> fetchPokemons() async {
+    if (_isLoading) return;
+    _isLoading = true;
+    state = const AsyncLoading();
     try {
-      final response = await http.get(Uri.parse('$_url/pokemons?page=1'));
-
-      if (response.statusCode != 200) {
-        throw FormatException('Failed to load pokemons');
-      }
-
-      final data = jsonDecode(response.body);
-
-      final pokemons = (data['pokemons'] as List)
-          .map((json) => Pokemon.fromJson(json))
-          .toList();
-
-      return PokemonState(
-        pokemons: pokemons,
-        currentPage: data['currentPage'],
-        totalPages: data['totalPages'],
-        filter: "",
-      );
+      state = AsyncData(await _fetchPage1());
     } catch (e) {
-      rethrow;
+      state = AsyncError(e, StackTrace.current);
+    } finally {
+      _isLoading = false;
     }
   }
 
@@ -72,12 +80,11 @@ class PokemonNotifier extends AsyncNotifier<PokemonState> {
     if (current == null || current.currentPage >= current.totalPages) return;
 
     _isLoading = true;
-
     try {
       final nextPage = current.currentPage + 1;
       final type = current.filter;
 
-      final response = current.filter.isNotEmpty
+      final response = type.isNotEmpty
           ? await http.get(
               Uri.parse(
                 '$_url/pokemons/type?type=$type&page=$nextPage&limit=20',
@@ -90,7 +97,6 @@ class PokemonNotifier extends AsyncNotifier<PokemonState> {
       }
 
       final data = jsonDecode(response.body);
-
       final newPokemons = (data['pokemons'] as List)
           .map((json) => Pokemon.fromJson(json))
           .toList();
@@ -102,71 +108,56 @@ class PokemonNotifier extends AsyncNotifier<PokemonState> {
           totalPages: data['totalPages'],
         ),
       );
-      _isLoading = false;
     } catch (e) {
+      // On ne crash pas l'état existant sur un loadMore raté
+    } finally {
       _isLoading = false;
-      rethrow;
     }
   }
 
-  void getPokemonByType(String? type) async {
+  void getPokemonByType(String type) async {
     if (_isLoading) return;
     _isLoading = true;
-    state = AsyncLoading();
+    state = const AsyncLoading();
     try {
-      final current = state.value;
-      if (current == null) return;
-
       final response = await http.get(
         Uri.parse('$_url/pokemons/type?type=$type&page=1'),
       );
       if (response.statusCode != 200) {
         throw FormatException('Une erreur est survenue');
       }
-
       final data = jsonDecode(response.body);
       final pokemons = (data['pokemons'] as List)
           .map((json) => Pokemon.fromJson(json))
           .toList();
       state = AsyncData(
-        current.copyWith(
+        PokemonState(
           pokemons: pokemons,
-          currentPage: 1,
+          currentPage: data['currentPage'],
           totalPages: data['totalPages'],
           filter: type,
         ),
       );
-      _isLoading = false;
     } catch (e) {
+      state = AsyncError(e, StackTrace.current);
+    } finally {
       _isLoading = false;
-      rethrow;
     }
   }
 
   Future<Pokemon> getPokemonById(String id) async {
     final parsedId = int.tryParse(id);
-    try {
-      final response = await http.get(Uri.parse('$_url/pokemons/$parsedId'));
-      if (response.statusCode != 200) {
-        throw FormatException('Une erreur est survenue');
-      }
-
-      final json = jsonDecode(response.body);
-      final pokemon = Pokemon.fromJson(json);
-      return pokemon;
-    } catch (e) {
-      rethrow;
+    final response = await http.get(Uri.parse('$_url/pokemons/$parsedId'));
+    if (response.statusCode != 200) {
+      throw FormatException('Une erreur est survenue');
     }
+    return Pokemon.fromJson(jsonDecode(response.body));
   }
 
   Future<void> setPokemonToFav(int id) async {
-    try {
-      final response = await http.patch(Uri.parse('$_url/pokemons/$id'));
-      if (response.statusCode != 200) {
-        throw FormatException('Failed to set or unset pokemon as fav');
-      }
-    } catch (e) {
-      rethrow;
+    final response = await http.patch(Uri.parse('$_url/pokemons/$id'));
+    if (response.statusCode != 200) {
+      throw FormatException('Failed to set or unset pokemon as fav');
     }
   }
 }
@@ -175,8 +166,7 @@ final getPokemonByIdProvider = FutureProvider.family<Pokemon, String>((
   ref,
   pokedexId,
 ) {
-  final notifier = ref.watch(pokemonProvider.notifier);
-  return notifier.getPokemonById(pokedexId);
+  return ref.watch(pokemonProvider.notifier).getPokemonById(pokedexId);
 });
 
 final pokemonProvider = AsyncNotifierProvider<PokemonNotifier, PokemonState>(

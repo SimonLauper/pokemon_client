@@ -12,7 +12,7 @@ class Heart extends StatefulWidget {
 
 class _HeartState extends State<Heart> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation _sizeAnimation;
+  late Animation<double> _sizeAnimation;
 
   @override
   void initState() {
@@ -21,9 +21,9 @@ class _HeartState extends State<Heart> with SingleTickerProviderStateMixin {
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    _sizeAnimation = TweenSequence([
-      TweenSequenceItem<double>(tween: Tween(begin: 25, end: 40), weight: 50),
-      TweenSequenceItem<double>(tween: Tween(begin: 40, end: 25), weight: 50),
+    _sizeAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 25, end: 36), weight: 50),
+      TweenSequenceItem(tween: Tween(begin: 36, end: 25), weight: 50),
     ]).animate(_controller);
   }
 
@@ -37,7 +37,7 @@ class _HeartState extends State<Heart> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _controller,
-      builder: (context, child) {
+      builder: (context, _) {
         return IconButton(
           onPressed: () {
             _controller.reset();
@@ -46,7 +46,9 @@ class _HeartState extends State<Heart> with SingleTickerProviderStateMixin {
           },
           icon: Icon(
             Icons.favorite,
-            color: widget.isFav ? Colors.red[700] : Colors.grey[800],
+            color: widget.isFav
+                ? const Color(0xFFEF4444)
+                : Colors.white.withOpacity(0.25),
             size: _sizeAnimation.value,
           ),
         );

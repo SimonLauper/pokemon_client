@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pokemon_client/src/theme/app_theme.dart';
 
 class StyledType extends StatelessWidget {
   const StyledType({super.key, required this.type});
@@ -10,11 +11,19 @@ class StyledType extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(100),
-        color: Color(0xFFBBE0CF),
+        color: DarkGlass.typeBadgeBg(type),
+        border: Border.all(color: DarkGlass.typeBadgeBorder(type), width: 1),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-        child: Center(child: Text(type)),
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
+      child: Center(
+        child: Text(
+          type,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: DarkGlass.typeBadgeFg(type),
+          ),
+        ),
       ),
     );
   }
