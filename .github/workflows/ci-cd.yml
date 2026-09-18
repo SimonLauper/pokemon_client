@@ -34,7 +34,7 @@ jobs:
       - run: flutter test
 
       # Validates the web build doesn't break; doesn't deploy anything.
-      - run: flutter build web --release
+      - run: flutter build web --release --base-href /pokemon/
 
   # Push-to-master only. Rebuilds (this job doesn't reuse the `test` job's
   # build artifact — see the CI/CD summary for why) and publishes a new,
@@ -76,5 +76,5 @@ jobs:
           username: ${{ secrets.VM2_DEPLOY_USER }}
           key: ${{ secrets.VM2_DEPLOY_SSH_KEY }}
           script: |
-            ln -sfn /var/www/pokemon-releases/${{ github.sha }} /var/www/pokemon
-            cd /var/www/pokemon-releases && ls -1dt */ | tail -n +4 | xargs -r rm -rf --
+            ln -sfn /var/www/pokemon-releases/${{ github.sha }} /var/www/pokemon-releases/current
+            cd /var/www/pokemon-releases && ls -1dt */ | grep -v '^current' | tail -n +4 | xargs -r rm -rf --
