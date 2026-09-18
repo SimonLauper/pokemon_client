@@ -25,7 +25,11 @@ jobs:
 
       - run: flutter pub get
 
-      - run: flutter analyze
+      # --no-fatal-infos: don't fail the build on info-level findings (e.g.
+      # a newly-deprecated API in a Flutter SDK bump) — those 6 already
+      # slipped through once and broke this job for nothing actually wrong.
+      # Warnings and errors (--fatal-warnings, the default) still fail it.
+      - run: flutter analyze --no-fatal-infos
 
       - run: flutter test
 

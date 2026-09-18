@@ -85,7 +85,7 @@ class _PokemonDetailsScreenState extends ConsumerState<PokemonDetailsScreen> {
                   center: const Alignment(0, 0.4),
                   radius: 0.7,
                   colors: [
-                    DarkGlass.accentBlue.withOpacity(0.25),
+                    DarkGlass.accentBlue.withValues(alpha: 0.25),
                     Colors.transparent,
                   ],
                 ),
@@ -240,7 +240,7 @@ class _StatRow extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: ratio,
                 minHeight: 5,
-                backgroundColor: Colors.white.withOpacity(0.08),
+                backgroundColor: Colors.white.withValues(alpha: 0.08),
                 valueColor: AlwaysStoppedAnimation<Color>(
                   DarkGlass.statColor(value),
                 ),
@@ -301,8 +301,8 @@ class _GlassButton extends StatelessWidget {
         height: 36,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.white.withOpacity(0.08),
-          border: Border.all(color: Colors.white.withOpacity(0.15)),
+          color: Colors.white.withValues(alpha: 0.08),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
         ),
         child: Center(child: child),
       ),

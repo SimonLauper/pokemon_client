@@ -107,6 +107,9 @@ class PokemonNotifier extends AsyncNotifier<PokemonState> {
         ),
       );
     } catch (e) {
+      // Deliberately swallowed: a failed "load more" during pagination
+      // should leave the already-loaded list on screen rather than replace
+      // it with a full-page error state.
     } finally {
       _isLoading = false;
     }

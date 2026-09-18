@@ -147,7 +147,7 @@ class _PokemonListScreenState extends ConsumerState<PokemonListScreen> {
         // Override du thème Flutter pour que le dropdown soit dark
         data: Theme.of(context).copyWith(canvasColor: const Color(0xFF1E1E35)),
         child: DropdownButtonFormField<String>(
-          value: _selectedType,
+          initialValue: _selectedType,
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
