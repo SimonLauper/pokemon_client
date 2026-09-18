@@ -39,7 +39,7 @@ jobs:
   # Push-to-master only. Rebuilds (this job doesn't reuse the `test` job's
   # build artifact — see the CI/CD summary for why) and publishes a new,
   # SHA-named release directory on VM2, then atomically flips the
-  # /var/www/pokemon symlink to it.
+  # /var/www/pokemon-releases/current symlink to it.
   deploy:
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
@@ -55,10 +55,13 @@ jobs:
 
       - run: flutter pub get
 
-      - run: flutter build web --release
+      # --base-href /pokemon/ : l'app est servie depuis lauper-dev.ch/pokemon/,
+      # pas depuis la racine du domaine. Sans ce flag, index.html référence
+      # les assets (flutter_bootstrap.js, manifest.json, etc.) avec des
+      # chemins absolus partant de "/", ce qui donne des 404 en prod même si
+      # tout semble correct en local.
+      - run: flutter build web --release --base-href /pokemon/
 
-      # ⚠️ /var/www/pokemon-releases below is a placeholder — I don't have
-      # access to VM2 to confirm the real path. Adjust if different.
       - name: Upload build to a new release directory on VM2
         uses: burnett01/rsync-deployments@v9
         with:
@@ -69,6 +72,10 @@ jobs:
           remote_user: ${{ secrets.VM2_DEPLOY_USER }}
           remote_key: ${{ secrets.VM2_DEPLOY_SSH_KEY }}
 
+      # /var/www/pokemon-releases/current (pas /var/www/pokemon) : deploy-client
+      # est propriétaire de tout /var/www/pokemon-releases/, mais pas de
+      # /var/www/ lui-même — créer un lien à cet endroit demanderait un droit
+      # qu'il n'a pas. nginx pointe donc directement sur .../current/.
       - name: Switch the live symlink and prune old releases
         uses: appleboy/ssh-action@v1
         with:
