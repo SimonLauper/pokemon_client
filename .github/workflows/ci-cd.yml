@@ -1,0 +1,76 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Required status check for branch protection (see repo settings). Runs on
+  # every PR into master and on every push to master.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          cache: true
+
+      - run: flutter pub get
+
+      - run: flutter analyze
+
+      - run: flutter test
+
+      # Validates the web build doesn't break; doesn't deploy anything.
+      - run: flutter build web --release
+
+  # Push-to-master only. Rebuilds (this job doesn't reuse the `test` job's
+  # build artifact — see the CI/CD summary for why) and publishes a new,
+  # SHA-named release directory on VM2, then atomically flips the
+  # /var/www/pokemon symlink to it.
+  deploy:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          cache: true
+
+      - run: flutter pub get
+
+      - run: flutter build web --release
+
+      # ⚠️ /var/www/pokemon-releases below is a placeholder — I don't have
+      # access to VM2 to confirm the real path. Adjust if different.
+      - name: Upload build to a new release directory on VM2
+        uses: burnett01/rsync-deployments@v9
+        with:
+          switches: "-avz"
+          path: "build/web/"
+          remote_path: "/var/www/pokemon-releases/${{ github.sha }}/"
+          remote_host: ${{ secrets.VM2_HOST }}
+          remote_user: ${{ secrets.VM2_DEPLOY_USER }}
+          remote_key: ${{ secrets.VM2_DEPLOY_SSH_KEY }}
+
+      - name: Switch the live symlink and prune old releases
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM2_HOST }}
+          username: ${{ secrets.VM2_DEPLOY_USER }}
+          key: ${{ secrets.VM2_DEPLOY_SSH_KEY }}
+          script: |
+            ln -sfn /var/www/pokemon-releases/${{ github.sha }} /var/www/pokemon
+            cd /var/www/pokemon-releases && ls -1dt */ | tail -n +4 | xargs -r rm -rf --

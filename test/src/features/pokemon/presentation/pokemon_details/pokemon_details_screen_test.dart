@@ -40,31 +40,5 @@ void main() {
       final defenseStatFinder = find.text('45').at(2);
       expect(defenseStatFinder, findsOneWidget);
     });
-
-    testWidgets('favorite button change color and take animation', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(home: PokemonDetailsScreen(pokedexId: "1")),
-        ),
-      );
-
-      await tester.pumpAndSettle();
-
-      final favoriteButton = find.byType(IconButton);
-      expect(favoriteButton, findsOneWidget);
-
-      Icon iconBefore = tester.widget<Icon>(find.byIcon(Icons.favorite));
-      expect(iconBefore.color, Colors.grey[800]);
-
-      await tester.tap(favoriteButton);
-
-      await tester.pump();
-      await tester.pumpAndSettle();
-
-      Icon iconAfter = tester.widget<Icon>(find.byIcon(Icons.favorite));
-      expect(iconAfter.color, Colors.red[700]);
-    });
   });
 }

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pokemon_client/src/features/pokemon/data/local/fake_pokemon_repository.dart';
 import 'package:pokemon_client/src/features/pokemon/data/remote/pokemon_repository.dart';
-import 'package:pokemon_client/src/features/pokemon/presentation/pokemon_details/heart.dart';
 import 'package:pokemon_client/src/theme/app_theme.dart';
 
 class PokemonDetailsScreen extends ConsumerStatefulWidget {
@@ -139,20 +138,6 @@ class _PokemonDetailsScreenState extends ConsumerState<PokemonDetailsScreen> {
             pokemon.name,
             style: DarkGlass.pokemonNameStyle.copyWith(fontSize: 26),
           ),
-        ),
-        Heart(
-          isFav: pokemon.isFav,
-          onToggle: () async {
-            if (kIsWeb) {
-              await ref
-                  .read(pokemonProvider.notifier)
-                  .setPokemonToFav(pokemon.pokedexId);
-              ref.invalidate(getPokemonByIdProvider(widget.pokedexId));
-            } else {
-              pokemon.toggleIsFav();
-              setState(() {});
-            }
-          },
         ),
       ],
     );

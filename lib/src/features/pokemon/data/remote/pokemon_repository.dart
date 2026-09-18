@@ -33,7 +33,7 @@ class PokemonState {
 }
 
 class PokemonNotifier extends AsyncNotifier<PokemonState> {
-  static const _url = 'https://api.lauper-dev.ch';
+  static const _url = 'https://poke-api.lauper-dev.ch';
 
   @override
   Future<PokemonState> build() async {
@@ -149,13 +149,6 @@ class PokemonNotifier extends AsyncNotifier<PokemonState> {
       throw FormatException('Une erreur est survenue');
     }
     return Pokemon.fromJson(jsonDecode(response.body));
-  }
-
-  Future<void> setPokemonToFav(int id) async {
-    final response = await http.patch(Uri.parse('$_url/pokemons/$id'));
-    if (response.statusCode != 200) {
-      throw FormatException('Failed to set or unset pokemon as fav');
-    }
   }
 }
 

@@ -15,7 +15,7 @@ class Pokemon {
   });
 
   factory Pokemon.fromJson(Map<String, dynamic> json) {
-    final pokemon = Pokemon(
+    return Pokemon(
       pokedexId: json['pokedex_id'] ?? 0,
       name: json['name']['fr'] ?? "",
       sprites: Sprite.fromJson(json['sprites']),
@@ -28,12 +28,6 @@ class Pokemon {
       height: json['height'] ?? "",
       weight: json['weight'] ?? "",
     );
-
-    if (json['isFav'] == true) {
-      pokemon.toggleIsFav();
-    }
-
-    return pokemon;
   }
 
   final int pokedexId;
@@ -44,11 +38,4 @@ class Pokemon {
   final Stats? stats;
   final String height;
   final String weight;
-  bool _isFav = false;
-
-  bool get isFav => _isFav;
-
-  void toggleIsFav() {
-    _isFav = !_isFav;
-  }
 }

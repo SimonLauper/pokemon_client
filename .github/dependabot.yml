@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Keeps the actions used in ci-cd.yml (subosito/flutter-action,
+  # burnett01/rsync-deployments, appleboy/ssh-action, ...) patched via
+  # reviewable PRs rather than only finding out an action moved/broke when a
+  # workflow run fails.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

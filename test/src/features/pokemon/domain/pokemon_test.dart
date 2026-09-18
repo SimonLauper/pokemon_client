@@ -38,20 +38,9 @@ void main() {
       return pokemon;
     });
 
-    test('isFav should return false by default', () {
-      expect(pokemon.isFav, false);
-    });
-
-    test('toggleIsFav should invert isFav state on each call', () {
-      pokemon.toggleIsFav();
-      expect(pokemon.isFav, true);
-      pokemon.toggleIsFav();
-      expect(pokemon.isFav, false);
-    });
-    test('toggleIsFav should return to false after two consecutive calls', () {
-      pokemon.toggleIsFav();
-      pokemon.toggleIsFav();
-      expect(pokemon.isFav, false);
+    test('exposes the fields it was constructed with', () {
+      expect(pokemon.pokedexId, 1);
+      expect(pokemon.name, "Bulbizarre");
     });
   });
 }
