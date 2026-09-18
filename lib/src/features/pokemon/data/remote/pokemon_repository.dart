@@ -33,8 +33,7 @@ class PokemonState {
 }
 
 class PokemonNotifier extends AsyncNotifier<PokemonState> {
-  static const _url = 'https://poke-api.lauper-dev.ch';
-
+  static const _url = 'https://lauper-dev.ch/api';
   @override
   Future<PokemonState> build() async {
     return await _fetchPage1();
