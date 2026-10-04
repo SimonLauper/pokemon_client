@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pokemon_client/src/common_widgets/pokeball.dart';
 import 'package:pokemon_client/src/common_widgets/styled_type.dart';
 import 'package:pokemon_client/src/features/pokemon/domain/pokemon.dart';
 import 'package:pokemon_client/src/routes/app_router.dart';
@@ -12,77 +13,100 @@ class PokemonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.goNamed(
-        AppRoute.detail.name,
-        pathParameters: {'id': pokemon.pokedexId.toString()},
+    final mainType = pokemon.types.isEmpty ? 'normal' : pokemon.types.first.name;
+    final onColor = PokedexTheme.onTypeColor(mainType);
+    final radius = BorderRadius.circular(22);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        boxShadow: [
+          BoxShadow(
+            color: PokedexTheme.typeColor(mainType).withValues(alpha: 0.4),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
-      child: Container(
-        decoration: DarkGlass.cardDecoration,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  gradient: DarkGlass.cardOverlay,
-                ),
-              ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            gradient: PokedexTheme.typeGradient(mainType),
+          ),
+          child: InkWell(
+            borderRadius: radius,
+            onTap: () => context.goNamed(
+              AppRoute.detail.name,
+              pathParameters: {'id': pokemon.pokedexId.toString()},
             ),
-
-            Positioned(
-              top: 8,
-              right: 12,
-              child: Text(
-                '#${pokemon.pokedexId.toString().padLeft(3, '0')}',
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: DarkGlass.textFaint,
-                ),
-              ),
-            ),
-
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: ShaderMask(
-                shaderCallback: (rect) => const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.white, Colors.white70],
-                ).createShader(rect),
-                blendMode: BlendMode.modulate,
-                child: Image.network(
-                  pokemon.sprites.regular,
-                  width: 90,
-                  height: 90,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.only(
-                top: 14,
-                left: 14,
-                bottom: 12,
-                right: 100,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
+            child: ClipRRect(
+              borderRadius: radius,
+              child: Stack(
                 children: [
-                  Text(pokemon.name, style: DarkGlass.pokemonNameStyle),
-                  const SizedBox(height: 8),
-                  for (final t in pokemon.types) ...[
-                    SizedBox(width: 110, child: StyledType(type: t.name)),
-                    const SizedBox(height: 4),
-                  ],
+                  Positioned(
+                    right: -22,
+                    bottom: -22,
+                    child: Pokeball.silhouette(
+                      size: 120,
+                      color: onColor.withValues(alpha: 0.16),
+                    ),
+                  ),
+                  Positioned(
+                    right: 4,
+                    bottom: 4,
+                    child: Image.network(
+                      pokemon.sprites.regular,
+                      width: 82,
+                      height: 82,
+                      fit: BoxFit.contain,
+                      gaplessPlayback: true,
+                      errorBuilder: (_, _, _) =>
+                          const SizedBox(width: 82, height: 82),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                pokemon.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: PokedexTheme.pokemonNameStyle.copyWith(
+                                  color: onColor,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '#${pokemon.pokedexId.toString().padLeft(3, '0')}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: onColor.withValues(alpha: 0.6),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        for (final t in pokemon.types) ...[
+                          StyledType(type: t.name),
+                          const SizedBox(height: 4),
+                        ],
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

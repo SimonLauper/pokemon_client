@@ -1,6 +1,6 @@
 # 📱 Pokédex App — pokemon_client
 
-Application mobile Flutter connectée à une API REST Node.js/MongoDB, permettant de consulter, filtrer et mettre en favoris des Pokémon. Interface Dark Glass sur fond sombre avec accents violet/bleu.
+Application mobile Flutter connectée à une API REST Node.js/MongoDB, permettant de consulter, filtrer et mettre en favoris des Pokémon. Interface aux couleurs du Pokédex : coque rouge, lentille bleue et cartes colorées selon le type du Pokémon.
 
 ---
 
@@ -19,7 +19,7 @@ Application mobile Flutter connectée à une API REST Node.js/MongoDB, permettan
 - **Fiche détail** avec stats, type, catégorie, poids et taille
 - **Système de favoris** avec animation de cœur
 - **Support Web & Mobile** avec données réelles (API) ou données locales simulées (fake repository)
-- **Design Dark Glass** — palette sombre avec accents dégradé violet → bleu
+- **Design Pokédex** — en-tête rouge avec lentille et voyants, Poké Ball dessinée en code, couleur propre à chacun des 18 types
 
 ---
 
@@ -71,8 +71,9 @@ lib/
 
 ### Liste des Pokémon
 
-- Grille 2 colonnes avec `GridView.builder`
-- Chaque carte affiche le nom, le ou les types, le numéro et le sprite officiel
+- En-tête rouge façon Pokédex (lentille bleue, voyants) contenant le filtre
+- Grille adaptative (2 colonnes sur mobile, davantage sur grand écran)
+- Chaque carte est colorée selon le type principal et affiche le nom, les types, le numéro et le sprite
 - **Infinite scroll** : chargement automatique de la page suivante à 300px du bas
 - **Dropdown de filtre** par type — sélectionner "Tous les types" recharge tous les Pokémon
 
@@ -80,23 +81,36 @@ lib/
 
 ### Fiche détail
 
-- Image officielle en hero avec effet de glow radial
-- Barre de stats animée (`LinearProgressIndicator`) avec couleur variable selon la valeur
-- Bouton retour glassmorphism
-- Bouton favori avec animation de pulse (scale 25→36→25px)
-- Paneau latéral : type (icône), catégorie, poids, taille
+- En-tête dans la couleur du type avec Poké Ball en filigrane, nom, numéro et types
+- Sprite qui déborde de l'en-tête sur la fiche blanche
+- Barres de stats animées, couleur variable selon la valeur
+- Bouton retour translucide sur l'en-tête coloré
+- Tuiles « À propos » : catégorie, poids, taille
 - Compatible Web (appel API) et Mobile (fake repository)
 
 ![Détail](assets/screenshot/pokemon_detail_screen.png)
 
 ---
 
-## Thème Dark Glass
+## Thème Pokédex
 
-Toutes les couleurs sont centralisées dans `app_theme.dart` :
+Toutes les couleurs sont centralisées dans `app_theme.dart` (classe `PokedexTheme`) :
 
-| Token          | Valeur       | Usage             |
-| -------------- | ------------ | ----------------- |
+| Token        | Valeur    | Usage                         |
+| ------------ | --------- | ----------------------------- |
+| `red`        | `#DC0A2D` | Coque du Pokédex, boutons     |
+| `lensBlue`   | `#29A9FF` | Lentille de l'en-tête         |
+| `screenBg`   | `#F2F3F8` | Fond de l'écran               |
+| `surface`    | `#FFFFFF` | Fiche détail, champs          |
+| `ink`        | `#1D1F2B` | Texte principal               |
+| `inkMuted`   | `#6B7185` | Texte secondaire              |
+
+Chaque type (18 supportés) a sa couleur : elle sert de fond à la carte du Pokémon
+dans la liste et à l'en-tête de sa fiche. La couleur du texte (blanc ou encre) est
+choisie automatiquement selon la luminosité du fond. La Poké Ball est dessinée en
+code (`common_widgets/pokeball.dart`).
+
+-------------- | ------------ | ----------------- |
 | `pageBg`       | `#0D0D1A`    | Fond global       |
 | `headerBg`     | `#16213E`    | Header            |
 | `accentPurple` | `#A78BFA`    | Accent principal  |
